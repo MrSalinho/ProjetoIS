@@ -1,4 +1,4 @@
-﻿from ariadne import QueryType, MutationType, make_executable_schema, graphql_sync
+from ariadne import QueryType, MutationType, make_executable_schema, graphql_sync
 from flask import Flask, request, jsonify
 import json
 import os
@@ -144,4 +144,4 @@ def graphql_server():
     return jsonify(result), status_code
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=4000)
+    app.run(debug=True, host="0.0.0.0", port=4000) 

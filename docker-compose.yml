@@ -1,5 +1,3 @@
-# Será preenchido mais tarde com os serviços REST, SOAP, etc.
-
 version: '3.8'
 
 services:
@@ -8,32 +6,28 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - data:/app/data
+      - ./data:/app/data
 
   graphql:
     build: ./servidor/graphql
     ports:
       - "4000:4000"
     volumes:
-      - data:/app/data
+      - ./data:/app/data
 
   grpc:
     build: ./servidor/grpc
     ports:
       - "50051:50051"
     volumes:
-      - data:/app/data
+      - ./data:/app/data
 
   soap:
     build: ./servidor/soap
     ports:
       - "8000:8000"
     volumes:
-      - data:/app/data
+      - ./data:/app/data
 
 volumes:
-  data:
-
-networks:
-  services-network:
-    driver: bridge
+  data: 

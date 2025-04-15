@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package livros;
+
+service LivroService {
+    // Serviços existentes
+    rpc ListarLivros (Empty) returns (Livros);
+    rpc AdicionarLivro (Livro) returns (Livro);
+    rpc AtualizarLivro (Livro) returns (Livro);
+    rpc ApagarLivro (LivroId) returns (Empty);
+    
+    // Novos serviços streaming
+    rpc StreamLivros (Empty) returns (stream Livro);
+    rpc ImportarLivrosStream (stream Livro) returns (ImportResponse);
+    rpc ExportarJSON (Empty) returns (ExportResponse);
+    rpc ExportarXML (Empty) returns (ExportResponse);
+}
+
+message Livro {
+    int32 id = 1;
+    string titulo = 2;
+    string autor = 3;
+    int32 ano = 4;
+    string estado = 5;
+}
+
+message ImportResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message ExportResponse {
+    string data = 1;
+    string format = 2;
+}

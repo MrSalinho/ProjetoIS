@@ -1,5 +1,6 @@
+flask
+jsonschema
 requests
-grpcio
-zeep
 dicttoxml
 xmltodict
+jsonpath-ng 

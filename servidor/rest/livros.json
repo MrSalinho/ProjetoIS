@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "titulo": "1984",
+    "autor": "George Orwell",
+    "ano": 1949,
+    "estado": "disponivel"
+  },
+  {
+    "id": 2,
+    "titulo": "Ensaio sobre a Cegueira",
+    "autor": "Jos\u00c3\u00a9 Saramago",
+    "ano": 1995,
+    "estado": "disponivel"
+  },
+  {
+    "id": 2,
+    "titulo": "Teste",
+    "autor": "ola",
+    "ano": 2003,
+    "estado": "disponivel"
+  }
+]
