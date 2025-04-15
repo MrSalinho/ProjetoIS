@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["id", "titulo", "autor", "ano", "genero"],
+  "properties": {
+    "id": { "type": "integer" },
+    "titulo": { "type": "string" },
+    "autor": { "type": "string" },
+    "ano": { "type": "integer" },
+    "genero": { "type": "string" }
+  }
+}

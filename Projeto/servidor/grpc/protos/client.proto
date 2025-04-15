@@ -1,0 +1,16 @@
+syntax = "proto3";  // Especifica que estás a usar a sintaxe proto3
+
+package client;  // Define o pacote (opcional, mas recomendado)
+
+service ClientService {  // Define o serviço
+    rpc SayHello (HelloRequest) returns (HelloResponse);  // Define o método SayHello
+}
+
+// Definição das mensagens que o serviço vai usar
+message HelloRequest {
+    string name = 1;  // Campo 'name' do tipo string
+}
+
+message HelloResponse {
+    string message = 1;  // Campo 'message' do tipo string
+}

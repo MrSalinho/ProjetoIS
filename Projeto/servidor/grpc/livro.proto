@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package livro;
+
+service LivroService {
+  rpc AdicionarLivro (Livro) returns (Resposta);
+  rpc ListarLivros (Vazio) returns (stream Livro);
+}
+
+message Livro {
+  int32 id = 1;
+  string titulo = 2;
+  string autor = 3;
+  int32 ano = 4;
+  string genero = 5;
+}
+
+message Vazio {}
+
+message Resposta {
+  string mensagem = 1;
+}

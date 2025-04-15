@@ -1,0 +1,9 @@
+<livros>
+  <livro>
+    <id>1</id>
+    <titulo>O Principezinho</titulo>
+    <autor>Antoine de Saint-Exupéry</autor>
+    <ano>1943</ano>
+    <genero>Ficção</genero>
+  </livro>
+</livros>
