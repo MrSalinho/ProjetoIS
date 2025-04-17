@@ -1,22 +1,21 @@
 import grpc
-import client_pb2
-import client_pb2_grpc
+import livro_pb2
+import livro_pb2_grpc
 
-# Função principal para chamar o servidor gRPC
 def run():
     # Cria uma conexão com o servidor gRPC na porta 50051
     with grpc.insecure_channel('localhost:50051') as channel:
         # Cria um stub (objeto que representa o serviço)
-        stub = client_pb2_grpc.ClientServiceStub(channel)
+        stub = livro_pb2_grpc.LivroServiceStub(channel)
 
-        # Cria uma mensagem de requisição
-        request = client_pb2.HelloRequest(name='Mundo')
+        # Exemplo de adicionar um livro
+        livro = livro_pb2.Livro(id=3, titulo="Harry Potter", autor="J.K. Rowling", ano=1997, genero="Fantasia")
+        resposta = stub.AdicionarLivro(livro)
+        print(f"Resposta do servidor: {resposta.mensagem}")
 
-        # Chama o método SayHello do serviço
-        response = stub.SayHello(request)
-
-        # Imprime a resposta do servidor
-        print(f'Resposta do servidor: {response.message}')
+        # Exemplo de listar livros
+        for livro in stub.ListarLivros(livro_pb2.Vazio()):
+            print(f"Livro ID: {livro.id}, Título: {livro.titulo}, Autor: {livro.autor}, Ano: {livro.ano}, Gênero: {livro.genero}")
 
 if __name__ == '__main__':
     run()

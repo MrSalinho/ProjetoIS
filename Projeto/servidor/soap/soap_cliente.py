@@ -1,45 +1,45 @@
-# cliente/soap_cliente.py
-
 from zeep import Client
 from zeep.exceptions import Fault
+import os
 
-WSDL_URL = "http://localhost:5002/?wsdl"  # ajusta este URL conforme o teu servidor
+# URL do WSDL do serviço SOAP
+WSDL_URL = 'http://localhost:5004/?wsdl' 
 
 client = Client(WSDL_URL)
 
 def listar_livros():
     try:
         livros = client.service.listar_livros()
-        print("📚 Lista de livros SOAP:")
+        print('📚 Lista de livros SOAP:')
         for livro in livros:
-            print(f"- {livro['titulo']} (ID: {livro['id']})")
+            print(f"- {livro.titulo} (ID: {livro.id}, Estado: {livro.estado})")
     except Fault as e:
-        print("❌ Erro ao listar livros:", e)
+        print('❌ Erro ao listar livros:', e)
 
 def adicionar_livro():
-    novo_livro = {
-        "id": 3,
-        "titulo": "Livro SOAP",
-        "autor": "Autor SOAP",
-        "ano": 2025
-    }
     try:
-        resultado = client.service.adicionar_livro(novo_livro)
-        if resultado:
-            print("✅ Livro adicionado com sucesso.")
-        else:
-            print("⚠️ Livro já existe ou erro no servidor.")
+        id_ = int(input('ID do livro: '))
+        titulo = input('Título do livro: ')
+        autor = input('Autor do livro: ')
+        ano = int(input('Ano de publicação: '))
+        estado = input('Estado (disponivel/emprestado): ')
+
+        novo = client.service.adicionar_livro(
+            id_, titulo, autor, ano, estado
+        )
+        print(f"✅ Adicionado: {novo.titulo} (ID {novo.id})")
     except Fault as e:
-        print("❌ Erro ao adicionar livro:", e)
+        print('❌ Erro ao adicionar livro:', e)
+    except ValueError:
+        print('❌ Valor inválido para ID ou Ano.')
 
-if __name__ == "__main__":
-    print("1. Listar livros")
-    print("2. Adicionar livro")
-    escolha = input("Escolhe uma opção: ")
-
-    if escolha == "1":
+if __name__ == '__main__':
+    print('1. Listar livros')
+    print('2. Adicionar livro')
+    opcao = input('Escolhe opção: ')
+    if opcao == '1':
         listar_livros()
-    elif escolha == "2":
+    elif opcao == '2':
         adicionar_livro()
     else:
-        print("❌ Opção inválida.")
+        print('❌ Opção inválida.')
