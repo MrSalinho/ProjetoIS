@@ -1,5 +1,2 @@
 requests
-grpcio
 zeep
-dicttoxml
-xmltodict

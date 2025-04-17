@@ -1,5 +1,3 @@
-# cliente/rest_cliente.py
-
 import requests
 import json
 
@@ -20,8 +18,24 @@ def criar_livro():
         "id": 3,
         "titulo": "Novo Livro REST",
         "autor": "Autor X",
-        "ano": 2024
+        "ano": 2024,
+        "estado": "disponivel"  # Adicionando o campo 'estado' para cumprir com a validação
     }
+
+    # Mostrar ao utilizador os estados possíveis para o livro
+    print("Escolhe o estado do livro:")
+    print("1. Disponível")
+    print("2. Emprestado")
+    escolha_estado = input("Escolhe uma opção (1 ou 2): ")
+
+    if escolha_estado == "1":
+        novo_livro["estado"] = "disponivel"
+    elif escolha_estado == "2":
+        novo_livro["estado"] = "emprestado"
+    else:
+        print("❌ Opção inválida para estado, usando 'disponivel' por padrão.")
+        novo_livro["estado"] = "disponivel"
+
     resposta = requests.post(BASE_URL, json=novo_livro)
     if resposta.status_code == 201:
         print("✅ Livro criado com sucesso.")

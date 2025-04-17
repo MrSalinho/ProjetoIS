@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿from ariadne import QueryType, MutationType, make_executable_schema, graphql_sync
 from flask import Flask, request, jsonify
 import json
@@ -126,19 +127,14 @@ type_defs = """
 schema = make_executable_schema(type_defs, [query, mutation])
 
 # Flask app
-app = Flask(__name__)
+=======
+from flask import Flask
+from flask_graphql import GraphQLView
+from schema import schema
 
-@app.route("/graphql", methods=["POST"])
-def graphql_server():
-    data = request.get_json()
-    success, result = graphql_sync(
-        schema,
-        data,
-        context_value=request,
-        debug=True
-    )
-    status_code = 200 if success else 400
-    return jsonify(result), status_code
+>>>>>>> parent of 672f4d6 (graph e rest a funcionar)
+app = Flask(__name__)
+app.add_url_rule("/graphql", view_func=GraphQLView.as_view("graphql", schema=schema, graphiql=True))
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=4000)
+    app.run(debug=True, port=5000)

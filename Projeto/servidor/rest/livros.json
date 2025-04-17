@@ -9,8 +9,22 @@
   {
     "id": 2,
     "titulo": "Ensaio sobre a Cegueira",
-    "autor": "José Saramago",
+    "autor": "Jos\u00c3\u00a9 Saramago",
     "ano": 1995,
-    "genero": "Ficção"
+    "genero": "Fic\u00c3\u00a7\u00c3\u00a3o"
+  },
+  {
+    "id": 3,
+    "titulo": "Novo Livro REST",
+    "autor": "Autor X",
+    "ano": 2024,
+    "estado": "disponivel"
+  },
+  {
+    "id": 3,
+    "titulo": "Novo Livro REST",
+    "autor": "Autor X",
+    "ano": 2024,
+    "estado": "emprestado"
   }
 ]

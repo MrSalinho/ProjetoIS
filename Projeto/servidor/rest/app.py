@@ -5,7 +5,7 @@ import dicttoxml
 import xmltodict
 from jsonpath_ng import parse
 import os
-import requests  # Import requests for external service calls
+import requests  # Para as interações com GraphQL e gRPC
 
 app = Flask(__name__)
 
@@ -19,7 +19,10 @@ with open(SCHEMA_PATH) as f:
 
 # Função de validação
 def validar_livro(livro):
-    validate(instance=livro, schema=schema)
+    try:
+        validate(instance=livro, schema=schema)
+    except ValidationError as e:
+        raise e
 
 # Função para ler e escrever livros
 def ler_livros():
@@ -125,17 +128,25 @@ def consultar_jsonpath():
     result = [match.value for match in jsonpath_expr.find(livros)]
     return jsonify(result)
 
-# New endpoint to interact with GraphQL
+# Interação com GraphQL
 @app.route("/graphql/livros", methods=["GET"])
 def graphql_livros():
-    response = requests.get("http://localhost:4000/graphql", json={"query": "{ livros { id titulo autor ano estado } }"})
-    return jsonify(response.json())
+    try:
+        response = requests.get("http://localhost:4000/graphql", json={"query": "{ livros { id titulo autor ano estado } }"})
+        response.raise_for_status()  # Verifica se houve erro na requisição
+        return jsonify(response.json())
+    except requests.exceptions.RequestException as e:
+        return jsonify({"erro": "Erro ao comunicar com GraphQL", "detalhe": str(e)}), 500
 
-# New endpoint to interact with gRPC
+# Interação com gRPC
 @app.route("/grpc/livros", methods=["GET"])
 def grpc_livros():
-    response = requests.get("http://localhost:50051/livros")
-    return jsonify(response.json())
+    try:
+        response = requests.get("http://localhost:50051/livros")
+        response.raise_for_status()  # Verifica se houve erro na requisição
+        return jsonify(response.json())
+    except requests.exceptions.RequestException as e:
+        return jsonify({"erro": "Erro ao comunicar com gRPC", "detalhe": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0")
+    app.run(debug=True, port=5001)
