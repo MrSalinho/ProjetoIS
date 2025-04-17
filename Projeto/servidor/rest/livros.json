@@ -26,5 +26,19 @@
     "autor": "Autor X",
     "ano": 2024,
     "estado": "emprestado"
+  },
+  {
+    "id": 10,
+    "titulo": "GraphQL com Flask",
+    "autor": "Autor QL",
+    "ano": 2025,
+    "estado": "disponivel"
+  },
+  {
+    "id": 1,
+    "titulo": "231",
+    "autor": "123",
+    "ano": 123,
+    "estado": "disponivel"
   }
 ]

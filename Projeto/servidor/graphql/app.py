@@ -1,140 +1,106 @@
-<<<<<<< HEAD
-﻿from ariadne import QueryType, MutationType, make_executable_schema, graphql_sync
 from flask import Flask, request, jsonify
+import graphene
+from graphene import ObjectType, String, Int, List, Field, Mutation
 import json
+import requests
 import os
-from jsonschema import validate, ValidationError
-import requests  # Import requests for REST calls
 
 # Caminhos dos ficheiros
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "livro_schema.json")
 DADOS_PATH = os.path.join(os.path.dirname(__file__), "livros.json")
 
-# Carregar o schema JSON
+# Carregar o schema JSON (para validações, se necessário)
 with open(SCHEMA_PATH) as f:
     livro_schema = json.load(f)
 
 def validar_livro(livro):
-    validate(instance=livro, schema=livro_schema)
+    # Aqui podes usar jsonschema.validate(livro, livro_schema)
+    # para validar conforme o teu schema
+    pass
 
 def ler_livros():
     try:
         with open(DADOS_PATH) as f:
             return json.load(f)
     except FileNotFoundError:
-        livros_iniciais = []
+        # Cria ficheiro vazio se não existir
         with open(DADOS_PATH, "w") as f:
-            json.dump(livros_iniciais, f, indent=2)
-        return livros_iniciais
+            json.dump([], f, indent=2)
+        return []
 
 def escrever_livros(livros):
     with open(DADOS_PATH, "w") as f:
         json.dump(livros, f, indent=2)
 
-# Definir tipos e resolvers
-query = QueryType()
-mutation = MutationType()
+# Definição do tipo Livro
+class Livro(ObjectType):
+    id = Int()
+    titulo = String()
+    autor = String()
+    ano = Int()
+    estado = String()
 
-@query.field("livros")
-def resolve_livros(*_):
-    # Fetch books from REST service
-    response = requests.get("http://localhost:5000/livros")
-    return response.json()
+# Queries
+class Query(ObjectType):
+    livros = List(Livro)
+    livro = Field(Livro, id=Int(required=True))
 
-@query.field("livro")
-def resolve_livro(*_, id):
-    livros = ler_livros()
-    for livro in livros:
-        if livro["id"] == id:
-            return livro
-    return None
+    def resolve_livros(self, info):
+        # Obter lista via REST
+        resp = requests.get("http://localhost:5001/livros")
+        return resp.json()
 
-@mutation.field("adicionarLivro")
-def resolve_adicionar_livro(*_, livro):
-    try:
-        validar_livro(livro)
-    except ValidationError as e:
-        raise Exception(f"Livro inválido: {e}")
-    
-    # Call REST service to add a book
-    response = requests.post("http://localhost:5000/livros", json=livro)
-    return response.json()
+    def resolve_livro(self, info, id):
+        for l in ler_livros():
+            if l["id"] == id:
+                return l
+        return None
 
-@mutation.field("atualizarLivro")
-def resolve_atualizar_livro(*_, id, livro):
-    try:
-        validar_livro(livro)
-    except ValidationError as e:
-        raise Exception(f"Livro inválido: {e}")
-    
-    # Call REST service to update a book
-    response = requests.put(f"http://localhost:5000/livros/{id}", json=livro)
-    return response.json()
+# Mutation de adicionar livro
+class AdicionarLivro(Mutation):
+    class Arguments:
+        id = Int(required=True)
+        titulo = String(required=True)
+        autor = String(required=True)
+        ano = Int(required=True)
+        estado = String(required=True)
 
-@mutation.field("apagarLivro")
-def resolve_apagar_livro(*_, id):
-    # Call REST service to delete a book
-    response = requests.delete(f"http://localhost:5000/livros/{id}")
-    return response.json()
+    livro = Field(Livro)
 
-@query.field("exportarLivrosJSON")
-def resolve_exportar_livros_json(*_):
-    return json.dumps(ler_livros())
+    def mutate(self, info, id, titulo, autor, ano, estado):
+        novo = {"id": id, "titulo": titulo, "autor": autor, "ano": ano, "estado": estado}
+        validar_livro(novo)
+        resp = requests.post("http://localhost:5001/livros", json=novo)
+        if resp.status_code != 201:
+            raise Exception(f"Erro REST: {resp.text}")
+        return AdicionarLivro(livro=resp.json())
 
-@mutation.field("importarLivrosJSON")
-def resolve_importar_livros_json(*_, livros_json):
-    try:
-        livros = json.loads(livros_json)
-        for livro in livros:
-            validar_livro(livro)
-        escrever_livros(livros)
-        return True
-    except Exception as e:
-        raise Exception(f"Erro na importação: {e}")
+class Mutation(ObjectType):
+    adicionar_livro = AdicionarLivro.Field()
 
-# Carregar schema GraphQL
-type_defs = """
-    type Livro {
-        id: Int!
-        titulo: String!
-        autor: String!
-        ano: Int!
-        estado: String!
-    }
+# Schema GraphQL
+schema = graphene.Schema(query=Query, mutation=Mutation)
 
-    type Query {
-        livros: [Livro!]!
-        livro(id: Int!): Livro
-        exportarLivrosJSON: String!
-    }
-
-    type Mutation {
-        adicionarLivro(livro: LivroInput!): Livro!
-        atualizarLivro(id: Int!, livro: LivroInput!): Livro
-        apagarLivro(id: Int!): Boolean!
-        importarLivrosJSON(livros_json: String!): Boolean!
-    }
-
-    input LivroInput {
-        id: Int!
-        titulo: String!
-        autor: String!
-        ano: Int!
-        estado: String!
-    }
-"""
-
-schema = make_executable_schema(type_defs, [query, mutation])
-
-# Flask app
-=======
-from flask import Flask
-from flask_graphql import GraphQLView
-from schema import schema
-
->>>>>>> parent of 672f4d6 (graph e rest a funcionar)
+# App Flask
 app = Flask(__name__)
-app.add_url_rule("/graphql", view_func=GraphQLView.as_view("graphql", schema=schema, graphiql=True))
+
+@app.route("/graphql", methods=["GET", "POST"])
+def graphql_server():
+    if request.method == "POST":
+        data = request.get_json()
+        q = data.get("query")
+        result = schema.execute(q)
+        res = {}
+        if result.errors:
+            res["errors"] = [str(e) for e in result.errors]
+        res["data"] = result.data
+        return jsonify(res)
+    # GET — só um simples manual
+    return """
+    <h2>GraphQL endpoint</h2>
+    <p>Faz POST com {"query": "..."} para /graphql</p>
+    """
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    # Corrige a porta se for outra
+    app.run(debug=True, port=5003)
