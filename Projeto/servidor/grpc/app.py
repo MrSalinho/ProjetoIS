@@ -4,6 +4,7 @@ import time
 import json
 import livro_pb2
 import livro_pb2_grpc
+import requests  # Import requests for REST calls
 
 class LivroService(livro_pb2_grpc.LivroServiceServicer):
     def AdicionarLivro(self, request, context):
@@ -15,45 +16,19 @@ class LivroService(livro_pb2_grpc.LivroServiceServicer):
             "genero": request.genero
         }
 
-        try:
-            with open("livros.json", "r+", encoding="utf-8") as f:
-                try:
-                    # Tenta carregar os dados do ficheiro
-                    data = json.load(f)
-                except json.JSONDecodeError:
-                    # Se o JSON estiver vazio ou mal formado, inicializa uma lista vazia
-                    data = []
-
-                # Adiciona o novo livro à lista
-                data.append(novo)
-                f.seek(0)  # Vai para o início do ficheiro
-                # Grava os dados de volta no ficheiro
-                json.dump(data, f, indent=2, ensure_ascii=False)
-                f.truncate()  # Elimina o conteúdo restante no ficheiro
-
-        except FileNotFoundError:
-            # Se o ficheiro não existir, cria um novo e adiciona o livro
-            with open("livros.json", "w", encoding="utf-8") as f:
-                json.dump([novo], f, indent=2, ensure_ascii=False)
-
-        return livro_pb2.Resposta(mensagem="Livro adicionado com sucesso.")
+        # Call REST service to add a book
+        response = requests.post("http://localhost:5000/livros", json=novo)
+        return livro_pb2.Resposta(mensagem=response.json().get("msg", "Livro adicionado com sucesso."))
 
     def ListarLivros(self, request, context):
         try:
-            with open("livros.json", "r", encoding="utf-8") as f:
-                # Carrega os livros do ficheiro
-                data = json.load(f)
-                # Para cada livro, cria uma resposta gRPC
-                for l in data:
-                    yield livro_pb2.Livro(**l)
-        except FileNotFoundError:
-            context.set_details("Ficheiro não encontrado.")
-            context.set_code(grpc.StatusCode.NOT_FOUND)
-            return []
-        except json.JSONDecodeError:
-            context.set_details("Erro ao ler o ficheiro JSON.")
+            response = requests.get("http://localhost:5000/livros")
+            data = response.json()
+            for l in data:
+                yield livro_pb2.Livro(**l)
+        except requests.exceptions.RequestException as e:
+            context.set_details(f"Erro ao chamar o serviço REST: {str(e)}")
             context.set_code(grpc.StatusCode.INTERNAL)
-            return []
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

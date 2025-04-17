@@ -5,12 +5,13 @@ import dicttoxml
 import xmltodict
 from jsonpath_ng import parse
 import os
+import requests  # Import requests for external service calls
 
 app = Flask(__name__)
 
 # Caminhos dos ficheiros
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'livro_schema.json')
-DADOS_PATH = os.path.join(os.path.dirname(__file__), '../data/livros.json')
+DADOS_PATH = os.path.join(os.path.dirname(__file__), 'livros.json')
 
 # Carregar o schema
 with open(SCHEMA_PATH) as f:
@@ -123,6 +124,18 @@ def consultar_jsonpath():
     jsonpath_expr = parse(expr)
     result = [match.value for match in jsonpath_expr.find(livros)]
     return jsonify(result)
+
+# New endpoint to interact with GraphQL
+@app.route("/graphql/livros", methods=["GET"])
+def graphql_livros():
+    response = requests.get("http://localhost:4000/graphql", json={"query": "{ livros { id titulo autor ano estado } }"})
+    return jsonify(response.json())
+
+# New endpoint to interact with gRPC
+@app.route("/grpc/livros", methods=["GET"])
+def grpc_livros():
+    response = requests.get("http://localhost:50051/livros")
+    return jsonify(response.json())
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")

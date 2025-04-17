@@ -1,6 +1,0 @@
-flask
-graphene
-flask-graphql
-ariadne
-jsonschema
-graphql-core 

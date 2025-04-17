@@ -1,6 +1,0 @@
-flask
-jsonschema
-requests
-dicttoxml
-xmltodict
-jsonpath-ng 

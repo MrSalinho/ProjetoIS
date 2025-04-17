@@ -4,6 +4,7 @@ from spyne.server.wsgi import WsgiApplication
 import json
 import os
 from lxml import etree
+import requests  # Import requests for REST calls
 
 # Caminho dos ficheiros
 DADOS_PATH = os.path.join(os.path.dirname(__file__), '../data/livros.json')
@@ -35,35 +36,29 @@ def validar_xml(xml_str):
 class LivroService(ServiceBase):
     @rpc(_returns=Iterable(Livro))
     def listar_livros(ctx):
-        livros = ler_livros()
+        # Call REST service to list books
+        response = requests.get("http://localhost:5000/livros")
+        livros = response.json()
         for l in livros:
             yield Livro(**l)
 
     @rpc(Livro, _returns=Unicode)
     def adicionar_livro(ctx, livro):
-        livros = ler_livros()
-        livros.append(dict(livro))
-        escrever_livros(livros)
-        return "Livro adicionado"
+        # Call REST service to add a book
+        response = requests.post("http://localhost:5000/livros", json=dict(livro))
+        return response.json().get("msg", "Livro adicionado")
 
     @rpc(Integer, Livro, _returns=Unicode)
     def atualizar_livro(ctx, id, livro):
-        livros = ler_livros()
-        for i, l in enumerate(livros):
-            if l['id'] == id:
-                livros[i] = dict(livro)
-                escrever_livros(livros)
-                return "Livro atualizado"
-        return "Livro não encontrado"
+        # Call REST service to update a book
+        response = requests.put(f"http://localhost:5000/livros/{id}", json=dict(livro))
+        return response.json().get("msg", "Livro atualizado")
 
     @rpc(Integer, _returns=Unicode)
     def apagar_livro(ctx, id):
-        livros = ler_livros()
-        livros_novos = [l for l in livros if l['id'] != id]
-        if len(livros_novos) == len(livros):
-            return "Livro não encontrado"
-        escrever_livros(livros_novos)
-        return "Livro apagado"
+        # Call REST service to delete a book
+        response = requests.delete(f"http://localhost:5000/livros/{id}")
+        return response.json().get("msg", "Livro apagado")
 
     @rpc(_returns=Unicode)
     def exportar_xml(ctx):

@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify
 import json
 import os
 from jsonschema import validate, ValidationError
+import requests  # Import requests for REST calls
 
 # Caminhos dos ficheiros
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "livro_schema.json")
@@ -35,7 +36,9 @@ mutation = MutationType()
 
 @query.field("livros")
 def resolve_livros(*_):
-    return ler_livros()
+    # Fetch books from REST service
+    response = requests.get("http://localhost:5000/livros")
+    return response.json()
 
 @query.field("livro")
 def resolve_livro(*_, id):
@@ -51,10 +54,10 @@ def resolve_adicionar_livro(*_, livro):
         validar_livro(livro)
     except ValidationError as e:
         raise Exception(f"Livro inválido: {e}")
-    livros = ler_livros()
-    livros.append(livro)
-    escrever_livros(livros)
-    return livro
+    
+    # Call REST service to add a book
+    response = requests.post("http://localhost:5000/livros", json=livro)
+    return response.json()
 
 @mutation.field("atualizarLivro")
 def resolve_atualizar_livro(*_, id, livro):
@@ -62,22 +65,16 @@ def resolve_atualizar_livro(*_, id, livro):
         validar_livro(livro)
     except ValidationError as e:
         raise Exception(f"Livro inválido: {e}")
-    livros = ler_livros()
-    for i, l in enumerate(livros):
-        if l["id"] == id:
-            livros[i] = livro
-            escrever_livros(livros)
-            return livro
-    return None
+    
+    # Call REST service to update a book
+    response = requests.put(f"http://localhost:5000/livros/{id}", json=livro)
+    return response.json()
 
 @mutation.field("apagarLivro")
 def resolve_apagar_livro(*_, id):
-    livros = ler_livros()
-    livros_novos = [l for l in livros if l["id"] != id]
-    if len(livros_novos) == len(livros):
-        return False
-    escrever_livros(livros_novos)
-    return True
+    # Call REST service to delete a book
+    response = requests.delete(f"http://localhost:5000/livros/{id}")
+    return response.json()
 
 @query.field("exportarLivrosJSON")
 def resolve_exportar_livros_json(*_):
